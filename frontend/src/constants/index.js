@@ -1,0 +1,19 @@
+export const TOKEN_KEY = "platform_token";
+export const X5_LOGO_URL_FALLBACK = "/x5-logo.svg";
+export const THEME_KEY_PREFIX = "platform_theme";
+export const SIDEBAR_WIDTH_KEY = "platform_sidebar_width";
+export const SIDEBAR_COLLAPSED_KEY = "platform_sidebar_collapsed";
+export const WIDGET_LAYOUT_KEY_PREFIX = "platform_widget_layout";
+export const COLUMN_WIDTHS_KEY_PREFIX = "platform_column_widths";
+export const VISIBLE_WIDGETS_KEY_PREFIX = "platform_visible_widgets";
+export const SHOW_PORTALS_SLIDER_KEY_PREFIX = "platform_show_portals_slider";
+export const PORTALS_VIEW_MODE_KEY_PREFIX = "platform_portals_view_mode";
+export const PORTALS_FAVORITES_KEY_PREFIX = "platform_portals_favorites";
+export const PORTALS_HIDDEN_KEY_PREFIX = "platform_portals_hidden";
+
+export const WIDGET_MIN_SPAN = 4;
+export const WIDGET_MAX_SPAN = 12;
+export const WIDGET_SPAN_STEPS = [4, 8, 12];
+export const DESKTOP_COLUMNS = ["left", "middle", "right"];
+export const DEFAULT_COLUMN_WIDTHS = { left: 34, middle: 33, right: 33 };
+export const DROP_POSITION_STICKINESS_PX = 14;

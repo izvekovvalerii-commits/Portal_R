@@ -39,44 +39,18 @@ function MapBounds({ stores }) {
   return null;
 }
 
-export default function MapWidget() {
-  const [selectedRegion, setSelectedRegion] = useState("all");
-
-  const regions = useMemo(() => {
-    const set = new Set(PYATEROCHKA_STORES.map((s) => s.region));
-    return ["all", ...Array.from(set).sort()];
-  }, []);
+export default function MapWidget({ selectedRegion: controlledRegion, onRegionChange }) {
+  const [internalRegion, setInternalRegion] = useState("all");
+  const selectedRegion = controlledRegion !== undefined ? controlledRegion : internalRegion;
+  const setSelectedRegion = onRegionChange || setInternalRegion;
 
   const filteredStores = useMemo(() => {
     if (selectedRegion === "all") return PYATEROCHKA_STORES;
     return PYATEROCHKA_STORES.filter((s) => s.region === selectedRegion);
   }, [selectedRegion]);
 
-  const regionLabel = selectedRegion === "all" ? "Все регионы" : selectedRegion;
-
   return (
     <div className="map-widget" aria-label="Интерактивная карта магазинов Пятёрочка">
-      <div className="map-widget-controls">
-        <label className="map-widget-filter-label">
-          <span className="map-widget-filter-text">Регион:</span>
-          <select
-            className="map-widget-region-select"
-            value={selectedRegion}
-            onChange={(e) => setSelectedRegion(e.target.value)}
-            aria-label="Фильтр по региону"
-          >
-            <option value="all">Все регионы</option>
-            {regions.filter((r) => r !== "all").map((region) => (
-              <option key={region} value={region}>
-                {region}
-              </option>
-            ))}
-          </select>
-        </label>
-        <span className="map-widget-count">
-          {filteredStores.length} {filteredStores.length === 1 ? "магазин" : filteredStores.length < 5 ? "магазина" : "магазинов"}
-        </span>
-      </div>
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
@@ -94,8 +68,8 @@ export default function MapWidget() {
             center={[store.lat, store.lon]}
             radius={8}
             pathOptions={{
-              fillColor: "#19a35b",
-              color: "#0f8a4a",
+              fillColor: "#003366",
+              color: "#002244",
               weight: 2,
               opacity: 1,
               fillOpacity: 0.85,

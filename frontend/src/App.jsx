@@ -51,6 +51,7 @@ import { getAvatarFocusLimits, cropImageToAvatarBlob } from "./utils/imageUtils"
 import { formatUiError, sanitizeUiErrorMessage } from "./utils/errorUtils";
 import { readStoredWidth, readStoredJson, writeStoredJson } from "./utils/storageUtils";
 import MapWidget from "./components/MapWidget";
+import OrionLogo from "./components/OrionLogo";
 import { PYATEROCHKA_STORES } from "./data/pyaterochkaStores";
 
 const SLOT_START_HOUR = 8;
@@ -58,9 +59,10 @@ const SLOT_END_HOUR = 21;
 const ACTIVITY_TARGET_HOURS = 6;
 
 const PORTAL_ICON_META = {
-  "Платформа развития ТСЧ": { icon: "🏢", color: "linear-gradient(135deg,#19a35b,#36b46b)", accent: "#19a35b" },
+  "Платформа развития ТСЧ": { icon: "🏢", color: "linear-gradient(135deg,#003366,#004080)", accent: "#003366" },
   "Портал по взаимодействию с Росреестром": { icon: "📜", color: "linear-gradient(135deg,#2f73ff,#1f67f1)", accent: "#2f73ff" },
-  "Портал ИК ТСБ": { icon: "💰", color: "linear-gradient(135deg,#ff9800,#f57c00)", accent: "#c27700" },
+  "Портал ИК ТСБ": { image: "/portal-ik-ts5.png", displayTitle: "Портал ИК ТС5", color: "transparent", accent: "#c27700" },
+  "Портал ИК ТС5": { image: "/portal-ik-ts5.png", displayTitle: "Портал ИК ТС5", color: "transparent", accent: "#c27700" },
   "X5 Nova Partner": { icon: "🤝", color: "linear-gradient(135deg,#af5bff,#9640f0)", accent: "#8b5cf6" },
   "ДизайнТ": { icon: "🎨", color: "linear-gradient(135deg,#e91e63,#c2185b)", accent: "#b91c4a" },
   "База Знаний": { icon: "📚", color: "linear-gradient(135deg,#00bcd4,#0097a7)", accent: "#0891a2" },
@@ -215,7 +217,8 @@ const PORTAL_IFRAME_TILES = {
   [LICENSING_PORTAL_TITLE]: { url: LICENSING_IFRAME_URL, title: LICENSING_PORTAL_TITLE },
   [ROSREESTR_PORTAL_TITLE]: { url: ROSREESTR_IFRAME_URL, title: ROSREESTR_PORTAL_TITLE },
   [PLATFORM_TSCH_PORTAL_TITLE]: { url: PLATFORM_TSCH_IFRAME_URL, title: PLATFORM_TSCH_PORTAL_TITLE },
-  [PORTAL_IK_TSB_TITLE]: { url: PORTAL_IK_TSB_IFRAME_URL, title: PORTAL_IK_TSB_TITLE },
+  [PORTAL_IK_TSB_TITLE]: { url: PORTAL_IK_TSB_IFRAME_URL, title: "Портал ИК ТС5" },
+  "Портал ИК ТС5": { url: PORTAL_IK_TSB_IFRAME_URL, title: "Портал ИК ТС5" },
   [PORTAL_IK_TSH_TITLE]: { url: PORTAL_IK_TSH_IFRAME_URL, title: PORTAL_IK_TSH_TITLE },
   [ASKO_TS5_PORTAL_TITLE]: { url: ASKO_TS5_IFRAME_URL, title: ASKO_TS5_PORTAL_TITLE },
 };
@@ -231,6 +234,8 @@ function getIframeTileForSystem(system) {
     return { url: ROSREESTR_IFRAME_URL, title: ROSREESTR_PORTAL_TITLE };
   if (title.includes("ик тсх"))
     return { url: PORTAL_IK_TSH_IFRAME_URL, title: PORTAL_IK_TSH_TITLE };
+  if (title.includes("ик тсб") || title.includes("ик тс5"))
+    return { url: PORTAL_IK_TSB_IFRAME_URL, title: "Портал ИК ТС5" };
   if (title.includes("аско тс5") || title.includes("asko ts5"))
     return { url: ASKO_TS5_IFRAME_URL, title: ASKO_TS5_PORTAL_TITLE };
   const url = (system.url || "").toLowerCase();
@@ -549,7 +554,7 @@ const DEFAULT_DESKTOP_WIDGETS = [
   { id: "calendar", title: "Календарь", span: 6, rowSpan: 1 },
   { id: "activity", title: "Моя активность", span: 6, rowSpan: 1 },
   { id: "activity_feed", title: "Лента активностей", span: 12, rowSpan: 2 },
-  { id: "map", title: "ГИС", span: 8, rowSpan: 2 },
+  { id: "map", title: "ГИС", span: 6, rowSpan: 1 },
 ];
 const WIDGET_SETTINGS_META = {
   asko: { icon: "▦", desc: "Стадии стройки и риски по объектам" },
@@ -561,6 +566,26 @@ const WIDGET_SETTINGS_META = {
   map: { icon: "🗺", desc: "ГИС, интерактивная карта OpenStreetMap" },
 };
 const DEFAULT_VISIBLE_WIDGET_IDS = DEFAULT_DESKTOP_WIDGETS.map((item) => item.id);
+const DEFAULT_CONSTRUCTION_WIDGET = {
+  system_name: "АСКО",
+  card_title: "Карточка объекта",
+  total_projects: 0,
+  active_projects: 0,
+  on_schedule: 0,
+  at_risk: 0,
+  needs_attention: 0,
+  stages: [],
+  projects_by_stage: {},
+  action_url: "#",
+  action_label: "Открыть",
+};
+const ONBOARDING_STORAGE_KEY = "terra-onboarding-seen";
+const SEARCH_PLACEHOLDER_PHRASES = [
+  "Найти сотрудника, сервис, документ...",
+  "Поиск по порталам и виджетам",
+  "Поиск по новостям и событиям",
+  "Поиск по задачам и календарю",
+];
 
 function _getDefaultWidgetRowSpanLegacy(widgetId) {
   return widgetId === "news" || widgetId === "asko" || widgetId === "activity_feed" || widgetId === "map" ? 2 : 1;
@@ -805,7 +830,7 @@ function ColumnBodyDropZone({ blockIndex, column, visible }) {
   return <div ref={setNodeRef} className="column-drop-body" />;
 }
 
-function DesktopWidgetShell({ widget, isDraggingWidget, activeWidgetId, dropHint, onToggleSize, children, shellClassName = "" }) {
+function DesktopWidgetShell({ widget, isDraggingWidget, activeWidgetId, dropHint, onToggleSize, children, shellClassName = "", headerExtra }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: widget.id });
   const showDropZones = isDraggingWidget && activeWidgetId !== widget.id;
 
@@ -845,18 +870,19 @@ function DesktopWidgetShell({ widget, isDraggingWidget, activeWidgetId, dropHint
           </div>
         )}
         <header className="widget-header">
-          <h3>{widget.title}</h3>
+          <div className="widget-header-title-row">
+            <h3>{widget.title}</h3>
+            {headerExtra}
+          </div>
           <div className="widget-controls">
             <button
-              className="ghost-btn"
+              type="button"
+              className="widget-size-toggle"
               onClick={() => onToggleSize(widget.id)}
-              title={`Размер: ${getWidgetSizeLabel(widget.span)}. Нажмите для ${getWidgetSizeLabel(getNextWidgetSpan(widget.span))}`}
-              aria-label={`Изменить размер виджета ${widget.title}. Сейчас ${getWidgetSizeLabel(widget.span)}`}
+              title={`Размер: ${getWidgetSizeLabel(widget.span)}`}
+              aria-label={`Размер виджета: ${getWidgetSizeLabel(widget.span)}`}
             >
-              <span className="widget-size-toggle">
-                <span aria-hidden="true">{getWidgetSizeIcon(widget.span)}</span>
-                <span className="widget-size-toggle-label">{getWidgetSizeLabel(widget.span)}</span>
-              </span>
+              {getWidgetSizeIcon(widget.span)}
             </button>
             <button type="button" className="widget-drag-hint" {...listeners} {...attributes} aria-label={`Переместить виджет ${widget.title}`}>
               ⋮⋮
@@ -930,11 +956,42 @@ const FALLBACK_QUICK_ROLES = [
   },
 ];
 
+const HERO_TITLE_PREFIX = "Орион:";
+const HERO_TITLE_TYPED = " единая платформа для развития бизнеса";
+
 function LoginPage({ onLogin }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [accessForm, setAccessForm] = useState({ name: "", email: "", company: "", message: "" });
+  const [accessRequestSent, setAccessRequestSent] = useState(false);
   const [quickRoles, setQuickRoles] = useState(FALLBACK_QUICK_ROLES);
   const [error, setError] = useState("");
+  const [heroTyped, setHeroTyped] = useState("");
+  const [heroTypingDone, setHeroTypingDone] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAccessRequestModal, setShowAccessRequestModal] = useState(false);
+
+  useEffect(() => {
+    let i = 0;
+    let intervalId = null;
+    const full = HERO_TITLE_TYPED;
+    const startDelay = setTimeout(() => {
+      intervalId = setInterval(() => {
+        if (i < full.length) {
+          setHeroTyped(full.slice(0, i + 1));
+          i += 1;
+        } else {
+          clearInterval(intervalId);
+          intervalId = null;
+          setHeroTypingDone(true);
+        }
+      }, 70);
+    }, 500);
+    return () => {
+      clearTimeout(startDelay);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     apiRequest("/auth/quick-access-by-role")
@@ -947,6 +1004,26 @@ function LoginPage({ onLogin }) {
       })
       .catch(() => setQuickRoles(FALLBACK_QUICK_ROLES));
   }, []);
+
+  const headerRef = useRef(null);
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      el.classList.toggle("scrolled", window.scrollY > 8);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const openLoginModal = () => setShowLoginModal(true);
+  const openAccessRequestModal = () => setShowAccessRequestModal(true);
+
+  const submitAccessRequest = (e) => {
+    e.preventDefault();
+    setAccessRequestSent(true);
+    setAccessForm({ name: "", email: "", company: "", message: "" });
+  };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -964,19 +1041,13 @@ function LoginPage({ onLogin }) {
     setError("");
     try {
       const firstUser = group?.users?.[0];
-      if (!firstUser) {
-        return;
-      }
-
-      // Если у пользователя есть id — пробуем быстрый логин через backend-эндпоинт
+      if (!firstUser) return;
       if (firstUser.id) {
         const data = await apiRequest("/auth/quick-login", { method: "POST", body: { user_id: firstUser.id } });
         onLogin(data.access_token);
         navigate("/");
         return;
       }
-
-      // Фолбэк: логинимся по email/паролю через обычный /auth/login
       if (firstUser.email && firstUser.password) {
         const data = await apiRequest("/auth/login", {
           method: "POST",
@@ -992,57 +1063,157 @@ function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="auth-layout">
-      <div className="auth-card">
-        <h1>Платформа развития</h1>
-        <p>Единое рабочее место для открытия и управления магазинами.</p>
-        <form onSubmit={submit}>
-          <label>
-            Email
-            <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          </label>
-          <label>
-            Пароль
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-            />
-          </label>
-          <button type="submit">Войти</button>
-          {error && <div className="error">{error}</div>}
-        </form>
-      </div>
-      <div className="quick-access">
-        <h2>Быстрый вход по ролям</h2>
-        <p>Авторизация тестовыми пользователями одной кнопкой.</p>
-        <div className="quick-grid">
-          {quickRoles.map((group) => {
-            const firstUser = group.users[0];
-            if (!firstUser) return null;
-            return (
-              <button
-                key={group.role_code}
-                className="quick-user"
-                type="button"
-                onClick={() => quickLogin(group)}
-              >
-                <strong>{group.role_name}</strong>
-                <span>{firstUser.full_name}</span>
-              </button>
-            );
-          })}
+    <div className="landing-page">
+      <header ref={headerRef} className="landing-header">
+        <div className="landing-header-inner">
+          <div className="landing-logo">
+            <OrionLogo collapsed={false} />
+          </div>
+          <nav className="landing-nav">
+            <button type="button" className="landing-nav-link" onClick={openAccessRequestModal}>Поддержка</button>
+            <button type="button" className="landing-nav-link" onClick={() => document.getElementById("solutions")?.scrollIntoView({ behavior: "smooth" })}>О нас</button>
+          </nav>
         </div>
-      </div>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-hero-twinkle" aria-hidden="true" />
+        <div className="landing-hero-content">
+          <h1 className="landing-hero-title">
+            <span className="landing-hero-title-brand">{HERO_TITLE_PREFIX}</span>
+            <span className="landing-hero-title-typed">{heroTyped}</span>
+            {!heroTypingDone && <span className="landing-hero-title-cursor" aria-hidden="true">|</span>}
+          </h1>
+          <p className={`landing-hero-subtitle ${heroTypingDone ? "landing-hero-subtitle--visible" : ""}`}>
+            Платформа, которая объединяет сервисы и инструменты для вашей команды
+          </p>
+          <div className="landing-hero-buttons">
+            <button type="button" className="landing-btn landing-btn--teal" onClick={openLoginModal}>
+              Сотрудник Х5
+            </button>
+            <button type="button" className="landing-btn landing-btn--teal" onClick={openAccessRequestModal}>
+              Партнер
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="solutions" className="landing-section landing-solutions">
+        <div className="landing-section-inner">
+          <h2 className="landing-section-title">Орион — это:</h2>
+          <div className="landing-cards">
+            <div className="landing-card">
+              <span className="landing-card-icon" aria-hidden="true">🔗</span>
+              <span className="landing-card-label">Единый доступ к сервисам и порталам</span>
+              <p className="landing-card-desc">Один вход — все сервисы и порталы платформы в одном месте.</p>
+            </div>
+            <div className="landing-card landing-card--highlight">
+              <span className="landing-card-icon" aria-hidden="true">⚙</span>
+              <span className="landing-card-label">Автоматизация</span>
+              <p className="landing-card-desc">Сокращение рутины: процессы, уведомления и согласования в одном месте.</p>
+            </div>
+            <div className="landing-card">
+              <span className="landing-card-icon" aria-hidden="true">🔍</span>
+              <span className="landing-card-label">Аналитика</span>
+              <p className="landing-card-desc">Сводки, отчёты и визуализация для принятия решений на основе данных.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showAccessRequestModal && (
+        <div className="landing-modal-overlay" onClick={() => setShowAccessRequestModal(false)} role="dialog" aria-labelledby="landing-modal-access-title" aria-modal="true">
+          <div className="landing-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="landing-modal-head">
+              <h2 id="landing-modal-access-title" className="landing-modal-title">Заявка на доступ</h2>
+              <button type="button" className="landing-modal-close" onClick={() => setShowAccessRequestModal(false)} aria-label="Закрыть">✕</button>
+            </div>
+            <div className="landing-modal-body">
+              <p className="landing-access-request-intro">Оставьте заявку, и мы свяжемся с вами для предоставления доступа к платформе.</p>
+              {accessRequestSent ? (
+                <div className="landing-access-request-success">
+                  Заявка отправлена. Мы свяжемся с вами в ближайшее время.
+                </div>
+              ) : (
+                <form className="landing-access-request-form" onSubmit={submitAccessRequest}>
+                  <label className="landing-auth-label">
+                    ФИО
+                    <input className="landing-auth-input" value={accessForm.name} onChange={(e) => setAccessForm({ ...accessForm, name: e.target.value })} placeholder="Иванов Иван Иванович" required />
+                  </label>
+                  <label className="landing-auth-label">
+                    Email
+                    <input className="landing-auth-input" type="email" value={accessForm.email} onChange={(e) => setAccessForm({ ...accessForm, email: e.target.value })} placeholder="email@company.ru" required />
+                  </label>
+                  <label className="landing-auth-label">
+                    Организация
+                    <input className="landing-auth-input" value={accessForm.company} onChange={(e) => setAccessForm({ ...accessForm, company: e.target.value })} placeholder="Название организации" />
+                  </label>
+                  <label className="landing-auth-label">
+                    Комментарий
+                    <textarea className="landing-auth-input landing-auth-input--textarea" value={accessForm.message} onChange={(e) => setAccessForm({ ...accessForm, message: e.target.value })} placeholder="Цель обращения (необязательно)" rows={3} />
+                  </label>
+                  <button type="submit" className="landing-btn landing-btn--teal landing-btn--sm">Отправить заявку</button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLoginModal && (
+        <div className="landing-modal-overlay" onClick={() => setShowLoginModal(false)} role="dialog" aria-labelledby="landing-modal-login-title" aria-modal="true">
+          <div className="landing-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="landing-modal-head">
+              <h2 id="landing-modal-login-title" className="landing-modal-title">Вход в платформу</h2>
+              <button type="button" className="landing-modal-close" onClick={() => setShowLoginModal(false)} aria-label="Закрыть">✕</button>
+            </div>
+            <div className="landing-modal-body">
+              <form className="landing-auth-form" onSubmit={submit}>
+                <label className="landing-auth-label">
+                  Email
+                  <input className="landing-auth-input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" />
+                </label>
+                <label className="landing-auth-label">
+                  Пароль
+                  <input className="landing-auth-input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" />
+                </label>
+                <button type="submit" className="landing-btn landing-btn--teal landing-btn--sm">Войти</button>
+                {error && <div className="landing-auth-error">{error}</div>}
+              </form>
+              <div className="landing-quick">
+                <p className="landing-quick-title">Быстрый вход по ролям</p>
+                <div className="landing-quick-grid">
+                  {quickRoles.map((group) => {
+                    const firstUser = group.users[0];
+                    if (!firstUser) return null;
+                    return (
+                      <button
+                        key={group.role_code}
+                        type="button"
+                        className="landing-quick-btn"
+                        onClick={() => quickLogin(group)}
+                      >
+                        <strong>{group.role_name}</strong>
+                        <span>{firstUser.full_name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
 
 function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfile }) {
-  const [dashboard, setDashboard] = useState(null);
+  const [dashboard, setDashboard] = useState({});
   const [catalog, setCatalog] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [constructionWidget, setConstructionWidget] = useState(null);
+  const [constructionWidget, setConstructionWidget] = useState(DEFAULT_CONSTRUCTION_WIDGET);
   const [newsFeed, setNewsFeed] = useState(MOCK_NEWS);
   const [newsError, setNewsError] = useState("");
   const [newsSaving, setNewsSaving] = useState(false);
@@ -1084,12 +1255,13 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
   const [isFavoritesEditMode, setIsFavoritesEditMode] = useState(false);
   const [askoWidgetHasAnimated, setAskoWidgetHasAnimated] = useState(false);
   const [isMenuOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(() => readStoredWidth(SIDEBAR_WIDTH_KEY, 250, 180, 420));
+  const [sidebarWidth, setSidebarWidth] = useState(() => readStoredWidth(SIDEBAR_WIDTH_KEY, 260, 200, 420));
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
   const [isDraggingPortals, setIsDraggingPortals] = useState(false);
   const [isDraggingActivity, setIsDraggingActivity] = useState(false);
   const [activityFeedFilter, setActivityFeedFilter] = useState("all");
+  const [mapRegion, setMapRegion] = useState("all");
   const [desktopWidgets, setDesktopWidgets] = useState(DEFAULT_DESKTOP_WIDGETS);
   const [visibleWidgetIds, setVisibleWidgetIds] = useState(DEFAULT_VISIBLE_WIDGET_IDS);
   const [activeWidgetId, setActiveWidgetId] = useState(null);
@@ -1108,6 +1280,12 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
   const [avatarAdjustments, setAvatarAdjustments] = useState({ focusX: 50, focusY: 50, scale: 100 });
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(ONBOARDING_STORAGE_KEY));
+  const [searchPlaceholderIndex, setSearchPlaceholderIndex] = useState(0);
+  const [searchPlaceholderText, setSearchPlaceholderText] = useState("");
+  const searchPlaceholderCharIndexRef = useRef(0);
+  const searchPlaceholderPhaseRef = useRef("typing");
+  const searchPlaceholderPauseUntilRef = useRef(0);
   const avatarFrameRef = useRef(null);
   const avatarPreviewImageRef = useRef(null);
   const avatarSelectorRef = useRef(null);
@@ -1167,6 +1345,37 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
   const iframeModalRef = useRef(null);
   const iframeModalTriggerRef = useRef(null);
 
+  const mapRegions = useMemo(() => {
+    const set = new Set(PYATEROCHKA_STORES.map((s) => s.region));
+    return ["all", ...Array.from(set).sort()];
+  }, []);
+  const mapFilteredCount = useMemo(() => {
+    if (mapRegion === "all") return PYATEROCHKA_STORES.length;
+    return PYATEROCHKA_STORES.filter((s) => s.region === mapRegion).length;
+  }, [mapRegion]);
+
+  const mapWidgetHeaderExtra = (
+    <div className="map-widget-header-controls">
+      <label className="map-widget-filter-label">
+        <span className="map-widget-filter-text">Регион:</span>
+        <select
+          className="map-widget-region-select"
+          value={mapRegion}
+          onChange={(e) => setMapRegion(e.target.value)}
+          aria-label="Фильтр по региону"
+        >
+          <option value="all">Все регионы</option>
+          {mapRegions.filter((r) => r !== "all").map((region) => (
+            <option key={region} value={region}>{region}</option>
+          ))}
+        </select>
+      </label>
+      <span className="map-widget-count">
+        {mapFilteredCount} {mapFilteredCount === 1 ? "магазин" : mapFilteredCount < 5 ? "магазина" : "магазинов"}
+      </span>
+    </div>
+  );
+
   const reloadCalendar = useCallback(async () => {
     if (!token) return;
     try {
@@ -1220,19 +1429,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
       setDashboard({});
       setCatalog(normalizeCatalogWithSingleLicensing([]));
       setProjects([]);
-      setConstructionWidget({
-        system_name: "АСКО",
-        card_title: "Карточка объекта",
-        total_projects: 0,
-        active_projects: 0,
-        on_schedule: 0,
-        at_risk: 0,
-        needs_attention: 0,
-        stages: [],
-        projects_by_stage: {},
-        action_url: "#",
-        action_label: "Открыть",
-      });
+      setConstructionWidget(DEFAULT_CONSTRUCTION_WIDGET);
       setNewsFeed(MOCK_NEWS);
       setCalendarTasks([]);
       setNewsError("");
@@ -1249,6 +1446,40 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
     });
     setProfileAvatarPreview("");
   }, [profile]);
+
+  useEffect(() => {
+    const phrases = SEARCH_PLACEHOLDER_PHRASES;
+    const interval = setInterval(() => {
+      const phrase = phrases[searchPlaceholderIndex];
+      if (!phrase) return;
+      const phase = searchPlaceholderPhaseRef.current;
+      if (phase === "typing") {
+        const idx = searchPlaceholderCharIndexRef.current;
+        if (idx < phrase.length) {
+          searchPlaceholderCharIndexRef.current = idx + 1;
+          setSearchPlaceholderText(phrase.slice(0, idx + 1));
+        } else {
+          searchPlaceholderPhaseRef.current = "pause";
+          searchPlaceholderPauseUntilRef.current = Date.now() + 2500;
+        }
+      } else if (phase === "pause") {
+        if (Date.now() >= searchPlaceholderPauseUntilRef.current) {
+          searchPlaceholderPhaseRef.current = "clearing";
+        }
+      } else if (phase === "clearing") {
+        setSearchPlaceholderText((prev) => {
+          if (prev.length <= 1) {
+            searchPlaceholderPhaseRef.current = "typing";
+            searchPlaceholderCharIndexRef.current = 0;
+            setSearchPlaceholderIndex((i) => (i + 1) % phrases.length);
+            return "";
+          }
+          return prev.slice(0, -1);
+        });
+      }
+    }, 70);
+    return () => clearInterval(interval);
+  }, [searchPlaceholderIndex]);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -2513,8 +2744,9 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
             .slice(0, 2)
             .map((part) => part[0]?.toUpperCase() || "")
             .join("");
+          const isChizhik = (item.title || "").toLowerCase().includes("чижик");
           return (
-            <article className={`news-card image-${item.image_placement} text-${item.text_layout}`} key={item.id}>
+            <article className={`news-card image-${item.image_placement} text-${item.text_layout} ${isChizhik ? "news-card--chizhik" : ""}`} key={item.id}>
               <div className="news-card-header">
                 <div className="news-author-block">
                   <span className="news-author-avatar">{authorInitials}</span>
@@ -2978,7 +3210,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
     if (widgetId === "calendar") return renderCalendarWidget();
     if (widgetId === "activity") return renderActivityWidget();
     if (widgetId === "activity_feed") return renderActivityFeedWidget();
-    if (widgetId === "map") return <MapWidget />;
+    if (widgetId === "map") return <MapWidget selectedRegion={mapRegion} onRegionChange={setMapRegion} />;
     return null;
   };
 
@@ -3061,7 +3293,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
     setIsDraggingPortals(true);
   };
 
-  if (!dashboard || !profile || !constructionWidget) {
+  if (!profile) {
       return (
         <div className="global-loader" role="status" aria-label="Загрузка портала">
           <div className="global-loader-shell">
@@ -3083,21 +3315,41 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
       );
     }
 
+  const dismissOnboarding = () => {
+    try {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, "1");
+    } catch (_) {}
+    setShowOnboarding(false);
+  };
+
   return (
     <div
       className={`app-shell ${theme === "dark" ? "theme-dark" : ""} ${isResizingSidebar ? "resizing" : ""}`}
-      style={{ "--sidebar-slot-width": "78px" }}
+      style={{ "--sidebar-slot-width": "72px" }}
     >
+      {activeSection === "desktop" && showOnboarding && (
+        <div className="onboarding-overlay" role="dialog" aria-labelledby="onboarding-title" aria-modal="true">
+          <div className="onboarding-backdrop" onClick={dismissOnboarding} aria-hidden="true" />
+          <div className="onboarding-card">
+            <h2 id="onboarding-title" className="onboarding-title">Добро пожаловать</h2>
+            <p className="onboarding-intro">Кратко о главной странице:</p>
+            <ul className="onboarding-list">
+              <li><strong>Избранные порталы</strong> — добавляйте нужные сервисы, они появятся здесь для быстрого доступа.</li>
+              <li><strong>Виджеты</strong> — перетаскивайте за ручку ⋮⋮, размер меняйте кнопкой в шапке виджета (1/3, 2/3, 3/3).</li>
+            </ul>
+            <button type="button" className="onboarding-dismiss landing-btn landing-btn--teal" onClick={dismissOnboarding}>
+              Понятно
+            </button>
+          </div>
+        </div>
+      )}
       <aside
         className={`sidebar ${isMenuOpen ? "open" : ""} ${isSidebarCollapsed ? "collapsed" : ""}`}
-        style={{ width: isSidebarCollapsed ? 78 : sidebarWidth }}
+        style={{ width: isSidebarCollapsed ? 72 : Math.max(sidebarWidth, 260) }}
         onMouseEnter={() => setIsSidebarCollapsed(false)}
         onMouseLeave={() => setIsSidebarCollapsed(true)}
       >
-        <div className="sidebar-title">
-          <span className="sidebar-title-short" aria-hidden={!isSidebarCollapsed}>X5</span>
-          <span className="sidebar-title-full" aria-hidden={isSidebarCollapsed}>Платформа развития</span>
-        </div>
+        <OrionLogo collapsed={isSidebarCollapsed} />
         <div className="sidebar-nav">
           {sidebarItems.map((item) => (
             <button
@@ -3151,6 +3403,19 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
       />
 
       <main className={`main-area ${portalIframeModal.open && portalIframeModal.url ? "main-area--iframe-open" : ""}`}>
+        <div className="main-area-bg-deco" aria-hidden="true">
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--1" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--2" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--3" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--4" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--5" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--6" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--7" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--8" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--9" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--10" />
+          <span className="main-area-bg-deco-blob main-area-bg-deco-blob--11" />
+        </div>
         {portalIframeModal.open && portalIframeModal.url ? (
           <div ref={iframeModalRef} className="iframe-full-view">
             <iframe src={portalIframeModal.url} title={portalIframeModal.title} className="licensing-iframe iframe-full-view-frame" />
@@ -3170,7 +3435,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
               <input
                 type="search"
                 className="dashboard-search-input"
-                placeholder="Найти сотрудника, сервис, документ..."
+                placeholder={searchPlaceholderText}
                 aria-label="Поиск"
               />
             </div>
@@ -3239,15 +3504,15 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                             <div className="desktop-portals-slider-empty-copy">
                               <p className="desktop-portals-slider-empty-title">Пока здесь пусто</p>
                               <p className="desktop-portals-slider-empty-text">
-                                Добавьте нужные порталы — они появятся на главной для быстрого доступа
+                                Здесь будут ваши часто используемые сервисы и порталы — один клик и вы внутри нужной системы.
                               </p>
                             </div>
                             <button
                               type="button"
-                              className="desktop-portals-slider-empty-btn"
+                              className="desktop-portals-slider-empty-btn desktop-portals-slider-empty-btn--primary"
                               onClick={() => setAddPortalModalOpen(true)}
                             >
-                              Добавить портал
+                              Добавить первый портал
                             </button>
                           </div>
                         );
@@ -3291,10 +3556,10 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                                 </button>
                               )}
                               <span className="desktop-portal-slide-icon" style={{ background: meta.color }}>
-                                {meta.icon}
+                                {meta.image ? <img src={meta.image} alt="" className="desktop-portal-slide-icon-img" /> : meta.icon}
                               </span>
                               <div className="desktop-portal-slide-text">
-                                <strong>{system.title}</strong>
+                                <strong>{meta.displayTitle || system.title}</strong>
                                 <span>{system.category}</span>
                               </div>
                               <span className="desktop-portal-slide-modal-hint" title="Открыть в окне">
@@ -3342,10 +3607,10 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                               </button>
                             )}
                             <span className="desktop-portal-slide-icon" style={{ background: meta.color }}>
-                              {meta.icon}
+                              {meta.image ? <img src={meta.image} alt="" className="desktop-portal-slide-icon-img" /> : meta.icon}
                             </span>
                             <div className="desktop-portal-slide-text">
-                              <strong>{system.title}</strong>
+                              <strong>{meta.displayTitle || system.title}</strong>
                               <span>{system.category}</span>
                             </div>
                           </a>
@@ -3355,7 +3620,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                   </div>
                 </section>
               )}
-              <section aria-label="Виджеты">
+              <section className="desktop-widgets-section" aria-label="Виджеты">
               {previewBlocks.map((block, blockIdx) => {
                 if (block.type === "full") {
                   const widget = block.widget;
@@ -3368,6 +3633,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                       dropHint={dropHint}
                       onToggleSize={cycleWidgetSize}
                       shellClassName="widget-shell-full"
+                      headerExtra={widget.id === "map" ? mapWidgetHeaderExtra : undefined}
                     >
                       {renderWidgetContent(widget.id)}
                     </DesktopWidgetShell>
@@ -3385,6 +3651,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                         dropHint={dropHint}
                         onToggleSize={cycleWidgetSize}
                         shellClassName="widget-shell-wide"
+                        headerExtra={widget.id === "map" ? mapWidgetHeaderExtra : undefined}
                       >
                         {renderWidgetContent(widget.id)}
                       </DesktopWidgetShell>
@@ -3417,7 +3684,6 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                           data-desktop-column={column}
                           data-block-index={blockIdx}
                           key={`${column}-${blockIdx}`}
-                          style={{ "--column-width": `${normalizedWidths[column] || 0}%` }}
                         >
                           {isDraggingWidget && <ColumnBodyDropZone blockIndex={blockIdx} column={column} visible />}
                           <div className="desktop-widget-column">
@@ -3429,6 +3695,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                                 activeWidgetId={activeWidgetId}
                                 dropHint={dropHint}
                                 onToggleSize={cycleWidgetSize}
+                                headerExtra={widget.id === "map" ? mapWidgetHeaderExtra : undefined}
                               >
                                 {isDraggingWidget && activeWidgetId === widget.id ? (
                                   <div
@@ -3453,14 +3720,6 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                               />
                             )}
                           </div>
-                          {!isDraggingWidget && columnIdx < columnsToRender.length - 1 && (
-                            <div
-                              className="desktop-column-resizer"
-                              onMouseDown={(event) => beginColumnResize(event, columnsToRender[columnIdx], columnsToRender[columnIdx + 1])}
-                              role="separator"
-                              aria-label="Изменение ширины колонок виджетов"
-                            />
-                          )}
                         </div>
                       );
                       });
@@ -3468,7 +3727,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                   </div>
                 );
               })}
-              <div className="widget-layout-hint">Перетащите виджеты за ручку ⋮⋮. Размер меняется иконкой в шапке: 1/3 → 2/3 → 3/3.</div>
+              <div className="widget-layout-hint">Перетащите виджеты за ручку ⋮⋮. Размер виджета: кнопка с иконкой в шапке (1/3, 2/3, 3/3).</div>
               </section>
             </section>
             <DragOverlay dropAnimation={null}>
@@ -3632,8 +3891,8 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                   const cardContent = (
                     <>
                       <div className="catalog-card-head">
-                        <span className="catalog-card-icon" style={{ "--card-accent": meta.accent || "#19a35b" }}>
-                          {meta.icon}
+                        <span className="catalog-card-icon" style={{ "--card-accent": meta.accent || "#003366" }}>
+                          {meta.image ? <img src={meta.image} alt="" className="catalog-card-icon-img" /> : meta.icon}
                         </span>
                         <div className="catalog-card-actions">
                           <button
@@ -3646,7 +3905,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                           </button>
                         </div>
                       </div>
-                      <h3>{system.title}</h3>
+                      <h3>{meta.displayTitle || system.title}</h3>
                       <p>{system.description}</p>
                       <div className="catalog-footer">
                         <span>{system.category}</span>
@@ -3823,7 +4082,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
         {activeSection === "analytics" && (
           <section className="analytics-layout">
             <div className="metrics-row">
-              {dashboard.metrics.map((metric) => (
+              {(dashboard?.metrics ?? []).map((metric) => (
                 <div className="metric-card" key={metric.key}>
                   <h3>{metric.title}</h3>
                   <strong>{metric.value}</strong>
@@ -4091,7 +4350,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                       <h4>Как настраивать виджеты</h4>
                     </div>
                     <p>Перемещайте карточки за ручку ⋮⋮, зоны привязки подсвечиваются автоматически.</p>
-                    <p>Размер переключается кнопкой в шапке виджета по циклу: 1/3, 2/3, 3/3 ширины.</p>
+                    <p>Перетащите виджеты за ручку ⋮⋮ в шапке для изменения порядка.</p>
                   </div>
                 </div>
               </div>
@@ -4377,11 +4636,11 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                         }
                       }}
                     >
-                      <span className="add-portal-tile-icon" style={{ "--tile-accent": meta.accent || "#19a35b" }}>
-                        {meta.icon}
+                      <span className="add-portal-tile-icon" style={{ "--tile-accent": meta.accent || "#003366" }}>
+                        {meta.image ? <img src={meta.image} alt="" className="add-portal-tile-icon-img" /> : meta.icon}
                       </span>
                       <div className="add-portal-tile-text">
-                        <strong>{system.title}</strong>
+                        <strong>{meta.displayTitle || system.title}</strong>
                         <span>{system.category}</span>
                       </div>
                       {isFavorite && <span className="add-portal-tile-check" aria-hidden="true">✓</span>}

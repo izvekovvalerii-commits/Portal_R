@@ -22,7 +22,7 @@ class Settings(BaseSettings):
         origins = [self.frontend_origin]
         if self.cors_extra_origins:
             origins.extend(o.strip() for o in self.cors_extra_origins.split(",") if o.strip())
-        for port in ("5190", "5191", "5192"):
+        for port in ("5190", "5191", "5192", "5193"):
             for host in ("localhost", "127.0.0.1"):
                 candidate = f"http://{host}:{port}"
                 if candidate not in origins:

@@ -59,7 +59,7 @@ const SLOT_END_HOUR = 21;
 const ACTIVITY_TARGET_HOURS = 6;
 
 const PORTAL_ICON_META = {
-  "Платформа развития ТСЧ": { icon: "🏢", color: "linear-gradient(135deg,#003366,#004080)", accent: "#003366" },
+  "Платформа развития ТСЧ": { image: "/portal-tsch-logo.png", displayTitle: "Портал развития ТСЧ", color: "transparent", accent: "#003366" },
   "Портал по взаимодействию с Росреестром": { icon: "📜", color: "linear-gradient(135deg,#2f73ff,#1f67f1)", accent: "#2f73ff" },
   "Портал ИК ТСБ": { image: "/portal-ik-ts5.png", displayTitle: "Портал ИК ТС5", color: "transparent", accent: "#c27700" },
   "Портал ИК ТС5": { image: "/portal-ik-ts5.png", displayTitle: "Портал ИК ТС5", color: "transparent", accent: "#c27700" },
@@ -69,15 +69,23 @@ const PORTAL_ICON_META = {
   "IT Поддержка": { icon: "🖥", color: "linear-gradient(135deg,#607d8b,#455a64)", accent: "#546e7a" },
   "Аренда в Пятёрочке": { icon: "🏪", color: "linear-gradient(135deg,#f44336,#d32f2f)", accent: "#b71c1c" },
   "Франчайзинг Пятёрочка": { icon: "🏬", color: "linear-gradient(135deg,#ff5722,#e64a19)", accent: "#e64a19" },
-  "Портал аренды Чижик": { icon: "🐦", color: "linear-gradient(135deg,#ffb22d,#f9a825)", accent: "#d4970f" },
+  "Портал аренды Чижик": { image: "/chizhik-logo.png", color: "transparent", accent: "#d4970f" },
   "Поиск и оценка": { icon: "🔍", color: "linear-gradient(135deg,#4caf50,#388e3c)", accent: "#2e7d32" },
   "Проектирование": { icon: "📐", color: "linear-gradient(135deg,#9c27b0,#7b1fa2)", accent: "#7b1fa2" },
   "Управление проектами": { icon: "📅", color: "linear-gradient(135deg,#3f51b5,#303f9f)", accent: "#3949ab" },
   "Партнеры": { icon: "🏭", color: "linear-gradient(135deg,#795548,#5d4037)", accent: "#5d4037" },
   "Лицензирование": { icon: "📄", color: "linear-gradient(135deg,#009688,#00796b)", accent: "#00695c" },
   "Взаимодействие с Росреестром": { icon: "🏛️", color: "linear-gradient(135deg,#1976d2,#1565c0)", accent: "#1565c0" },
-  "Портал ИК ТСХ": { icon: "📋", color: "linear-gradient(135deg,#5c6bc0,#3949ab)", accent: "#3949ab" },
+  "Портал ИК ТСХ": { image: "/portal-gis-ik-tsh-icon.png", color: "transparent", accent: "#3949ab" },
   "АСКО ТС5": { icon: "🏗️", color: "linear-gradient(135deg,#43a047,#2e7d32)", accent: "#2e7d32" },
+  "АСКО ТСХ": { icon: "🏗️", color: "linear-gradient(135deg,#2e7d32,#1b5e20)", accent: "#2e7d32" },
+  "СЭД ТС5": { icon: "📄", color: "linear-gradient(135deg,#1565c0,#0d47a1)", accent: "#1565c0" },
+  "СЭД ТСЧ": { icon: "📄", color: "linear-gradient(135deg,#1565c0,#0d47a1)", accent: "#1565c0" },
+  "СЭД ТСХ": { icon: "📄", color: "linear-gradient(135deg,#1565c0,#0d47a1)", accent: "#1565c0" },
+  "Сфера": { icon: "🔮", color: "linear-gradient(135deg,#6a1b9a,#4a148c)", accent: "#6a1b9a" },
+  "ГИС ТС5": { icon: "🗺️", color: "linear-gradient(135deg,#0d47a1,#1565c0)", accent: "#1565c0" },
+  "ГИС ТСХ": { image: "/portal-gis-ik-tsh-icon.png", color: "transparent", accent: "#1565c0" },
+  "ГИС ТСЧ": { icon: "🗺️", color: "linear-gradient(135deg,#0d47a1,#1565c0)", accent: "#1565c0" },
 };
 
 const PORTAL_LINK_META = {};
@@ -178,8 +186,75 @@ function isAskoTS5CatalogItem(item) {
   );
 }
 
+const ASKO_TSH_TITLE = "АСКО ТСХ";
+const ASKO_TSH_IFRAME_URL = "https://ko1.x5.ru/";
+const ASKO_TSH_ID = "asko-tsh";
+
+const ASKO_TSH_CANONICAL_ENTRY = {
+  id: ASKO_TSH_ID,
+  title: ASKO_TSH_TITLE,
+  url: ASKO_TSH_IFRAME_URL,
+  category: "Сервисы",
+  description: "Портал АСКО ТСХ",
+  status: "Доступен",
+};
+
+function isAskoTSHCatalogItem(item) {
+  if (!item) return false;
+  const t = (item.title || "").trim().toLowerCase();
+  const u = (item.url || "").toLowerCase();
+  return t.includes("аско тсх") || u.includes("ko1-tsh.x5.ru");
+}
+
+const SED_IFRAME_URL = "https://sed.x5.ru";
+const SED_TS5_TITLE = "СЭД ТС5";
+const SED_TS5_ID = "sed-ts5";
+const SED_TSCH_TITLE = "СЭД ТСЧ";
+const SED_TSCH_ID = "sed-tsch";
+const SED_TSH_TITLE = "СЭД ТСХ";
+const SED_TSH_ID = "sed-tsh";
+
+const SED_TS5_CANONICAL_ENTRY = {
+  id: SED_TS5_ID,
+  title: SED_TS5_TITLE,
+  url: SED_IFRAME_URL,
+  category: "Сервисы",
+  description: "Система электронного документооборота ТС5",
+  status: "Доступен",
+};
+
+const SED_TSCH_CANONICAL_ENTRY = {
+  id: SED_TSCH_ID,
+  title: SED_TSCH_TITLE,
+  url: SED_IFRAME_URL,
+  category: "Сервисы",
+  description: "Система электронного документооборота ТСЧ",
+  status: "Доступен",
+};
+
+const SED_TSH_CANONICAL_ENTRY = {
+  id: SED_TSH_ID,
+  title: SED_TSH_TITLE,
+  url: SED_IFRAME_URL,
+  category: "Сервисы",
+  description: "Система электронного документооборота ТСХ",
+  status: "Доступен",
+};
+
+function isSedCatalogItem(item) {
+  if (!item) return false;
+  const t = (item.title || "").trim().toLowerCase();
+  const u = (item.url || "").toLowerCase();
+  return (
+    t.includes("сэд тс5") ||
+    t.includes("сэд тсч") ||
+    t.includes("сэд тсх") ||
+    u.includes("sed.x5.ru")
+  );
+}
+
 function normalizeCatalogWithSingleLicensing(catalog) {
-  if (!Array.isArray(catalog)) return [LICENSING_CANONICAL_ENTRY, ROSREESTR_CANONICAL_ENTRY, PORTAL_IK_TSH_CANONICAL_ENTRY, ASKO_TS5_CANONICAL_ENTRY];
+  if (!Array.isArray(catalog)) return [LICENSING_CANONICAL_ENTRY, ROSREESTR_CANONICAL_ENTRY, PORTAL_IK_TSH_CANONICAL_ENTRY, ASKO_TS5_CANONICAL_ENTRY, ASKO_TSH_CANONICAL_ENTRY, SED_TS5_CANONICAL_ENTRY, SED_TSCH_CANONICAL_ENTRY, SED_TSH_CANONICAL_ENTRY, SFERA_CANONICAL_ENTRY, GIS_TS5_CANONICAL_ENTRY, GIS_TSH_CANONICAL_ENTRY, GIS_TSCH_CANONICAL_ENTRY];
   const licensingFromCatalog = catalog.find(isLicensingCatalogItem);
   const singleLicensing = {
     ...LICENSING_CANONICAL_ENTRY,
@@ -204,23 +279,111 @@ function normalizeCatalogWithSingleLicensing(catalog) {
   const withoutBoth = withoutLicensing.filter((item) => !isRosreestrCatalogItem(item));
   const withoutThree = withoutBoth.filter((item) => !isPortalIKTSHCatalogItem(item));
   const withoutFour = withoutThree.filter((item) => !isAskoTS5CatalogItem(item));
-  return [...withoutFour, singleLicensing, singleRosreestr, singleIKTSH, singleAskoTS5];
+  const withoutAskoTsh = withoutFour.filter((item) => !isAskoTSHCatalogItem(item));
+  const withoutSed = withoutAskoTsh.filter((item) => !isSedCatalogItem(item));
+  const withoutSfera = withoutSed.filter((item) => !isSferaCatalogItem(item));
+  const withoutGis = withoutSfera.filter((item) => !isGisCatalogItem(item));
+  return [...withoutGis, singleLicensing, singleRosreestr, singleIKTSH, singleAskoTS5, ASKO_TSH_CANONICAL_ENTRY, SED_TS5_CANONICAL_ENTRY, SED_TSCH_CANONICAL_ENTRY, SED_TSH_CANONICAL_ENTRY, SFERA_CANONICAL_ENTRY, GIS_TS5_CANONICAL_ENTRY, GIS_TSH_CANONICAL_ENTRY, GIS_TSCH_CANONICAL_ENTRY];
 }
 
-const PLATFORM_TSCH_PORTAL_TITLE = "Платформа развития ТСЧ";
+const PLATFORM_TSCH_PORTAL_TITLE = "Портал развития ТСЧ";
 const PLATFORM_TSCH_IFRAME_URL = "https://proto1.pr4.x5.ru/";
 
 const PORTAL_IK_TSB_TITLE = "Портал ИК ТСБ";
 const PORTAL_IK_TSB_IFRAME_URL = "https://mik5.x5.ru/";
 
+const ARENDA_PYATEROCHKA_TITLE = "Аренда в Пятёрочке";
+const ARENDA_PYATEROCHKA_IFRAME_URL = "https://backofficefrontend9d3ee-rentplamform8b3f8.dev.dev.x5.ru/";
+
+const IT_SUPPORT_TITLE = "IT Поддержка";
+const IT_SUPPORT_IFRAME_URL = "https://support.x5.ru/";
+
+const SFERA_TITLE = "Сфера";
+const SFERA_IFRAME_URL = "https://sfera.x5.ru";
+const SFERA_ID = "sfera";
+
+const SFERA_CANONICAL_ENTRY = {
+  id: SFERA_ID,
+  title: SFERA_TITLE,
+  url: SFERA_IFRAME_URL,
+  category: "Сервисы",
+  description: "Портал Сфера",
+  status: "Доступен",
+};
+
+function isSferaCatalogItem(item) {
+  if (!item) return false;
+  const t = (item.title || "").trim().toLowerCase();
+  const u = (item.url || "").toLowerCase();
+  return t.includes("сфера") || u.includes("sfera.x5.ru");
+}
+
+const GIS_IFRAME_URL = "https://gis.x5.ru";
+const GIS_TS5_TITLE = "ГИС ТС5";
+const GIS_TS5_ID = "gis-ts5";
+const GIS_TSH_TITLE = "ГИС ТСХ";
+const GIS_TSH_ID = "gis-tsh";
+const GIS_TSCH_TITLE = "ГИС ТСЧ";
+const GIS_TSCH_ID = "gis-tsch";
+
+const GIS_TS5_CANONICAL_ENTRY = {
+  id: GIS_TS5_ID,
+  title: GIS_TS5_TITLE,
+  url: GIS_IFRAME_URL,
+  category: "Сервисы",
+  description: "Геоинформационная система ТС5",
+  status: "Доступен",
+};
+
+const GIS_TSH_CANONICAL_ENTRY = {
+  id: GIS_TSH_ID,
+  title: GIS_TSH_TITLE,
+  url: GIS_IFRAME_URL,
+  category: "Сервисы",
+  description: "Геоинформационная система ТСХ",
+  status: "Доступен",
+};
+
+const GIS_TSCH_CANONICAL_ENTRY = {
+  id: GIS_TSCH_ID,
+  title: GIS_TSCH_TITLE,
+  url: GIS_IFRAME_URL,
+  category: "Сервисы",
+  description: "Геоинформационная система ТСЧ",
+  status: "Доступен",
+};
+
+function isGisCatalogItem(item) {
+  if (!item) return false;
+  const t = (item.title || "").trim().toLowerCase();
+  const u = (item.url || "").toLowerCase();
+  return (
+    t.includes("гис тс5") ||
+    t.includes("гис тсх") ||
+    t.includes("гис тсч") ||
+    u.includes("gis.x5.ru")
+  );
+}
+
 const PORTAL_IFRAME_TILES = {
   [LICENSING_PORTAL_TITLE]: { url: LICENSING_IFRAME_URL, title: LICENSING_PORTAL_TITLE },
   [ROSREESTR_PORTAL_TITLE]: { url: ROSREESTR_IFRAME_URL, title: ROSREESTR_PORTAL_TITLE },
   [PLATFORM_TSCH_PORTAL_TITLE]: { url: PLATFORM_TSCH_IFRAME_URL, title: PLATFORM_TSCH_PORTAL_TITLE },
+  "Платформа развития ТСЧ": { url: PLATFORM_TSCH_IFRAME_URL, title: PLATFORM_TSCH_PORTAL_TITLE },
   [PORTAL_IK_TSB_TITLE]: { url: PORTAL_IK_TSB_IFRAME_URL, title: "Портал ИК ТС5" },
   "Портал ИК ТС5": { url: PORTAL_IK_TSB_IFRAME_URL, title: "Портал ИК ТС5" },
   [PORTAL_IK_TSH_TITLE]: { url: PORTAL_IK_TSH_IFRAME_URL, title: PORTAL_IK_TSH_TITLE },
   [ASKO_TS5_PORTAL_TITLE]: { url: ASKO_TS5_IFRAME_URL, title: ASKO_TS5_PORTAL_TITLE },
+  [ASKO_TSH_TITLE]: { url: ASKO_TSH_IFRAME_URL, title: ASKO_TSH_TITLE },
+  [SED_TS5_TITLE]: { url: SED_IFRAME_URL, title: SED_TS5_TITLE },
+  [SED_TSCH_TITLE]: { url: SED_IFRAME_URL, title: SED_TSCH_TITLE },
+  [SED_TSH_TITLE]: { url: SED_IFRAME_URL, title: SED_TSH_TITLE },
+  [ARENDA_PYATEROCHKA_TITLE]: { url: ARENDA_PYATEROCHKA_IFRAME_URL, title: ARENDA_PYATEROCHKA_TITLE },
+  [IT_SUPPORT_TITLE]: { url: IT_SUPPORT_IFRAME_URL, title: IT_SUPPORT_TITLE },
+  [SFERA_TITLE]: { url: SFERA_IFRAME_URL, title: SFERA_TITLE },
+  [GIS_TS5_TITLE]: { url: GIS_IFRAME_URL, title: GIS_TS5_TITLE },
+  [GIS_TSH_TITLE]: { url: GIS_IFRAME_URL, title: GIS_TSH_TITLE },
+  [GIS_TSCH_TITLE]: { url: GIS_IFRAME_URL, title: GIS_TSCH_TITLE },
 };
 
 function getIframeTileForSystem(system) {
@@ -232,17 +395,35 @@ function getIframeTileForSystem(system) {
     return { url: LICENSING_IFRAME_URL, title: LICENSING_PORTAL_TITLE };
   if (title.includes("росреестр") || title.includes("rosreestr"))
     return { url: ROSREESTR_IFRAME_URL, title: ROSREESTR_PORTAL_TITLE };
+  if (title.includes("платформа развития тсч") || title.includes("портал развития тсч"))
+    return { url: PLATFORM_TSCH_IFRAME_URL, title: PLATFORM_TSCH_PORTAL_TITLE };
   if (title.includes("ик тсх"))
     return { url: PORTAL_IK_TSH_IFRAME_URL, title: PORTAL_IK_TSH_TITLE };
   if (title.includes("ик тсб") || title.includes("ик тс5"))
     return { url: PORTAL_IK_TSB_IFRAME_URL, title: "Портал ИК ТС5" };
   if (title.includes("аско тс5") || title.includes("asko ts5"))
     return { url: ASKO_TS5_IFRAME_URL, title: ASKO_TS5_PORTAL_TITLE };
+  if (title.includes("аско тсх")) return { url: ASKO_TSH_IFRAME_URL, title: ASKO_TSH_TITLE };
+  if (title.includes("сэд тс5")) return { url: SED_IFRAME_URL, title: SED_TS5_TITLE };
+  if (title.includes("сэд тсч")) return { url: SED_IFRAME_URL, title: SED_TSCH_TITLE };
+  if (title.includes("сэд тсх")) return { url: SED_IFRAME_URL, title: SED_TSH_TITLE };
+  if (title.includes("аренда") && title.includes("пят")) return { url: ARENDA_PYATEROCHKA_IFRAME_URL, title: ARENDA_PYATEROCHKA_TITLE };
+  if (title.includes("it поддержка") || title.includes("it-поддержка")) return { url: IT_SUPPORT_IFRAME_URL, title: IT_SUPPORT_TITLE };
+  if (title.includes("сфера")) return { url: SFERA_IFRAME_URL, title: SFERA_TITLE };
+  if (title.includes("гис тс5")) return { url: GIS_IFRAME_URL, title: GIS_TS5_TITLE };
+  if (title.includes("гис тсх")) return { url: GIS_IFRAME_URL, title: GIS_TSH_TITLE };
+  if (title.includes("гис тсч")) return { url: GIS_IFRAME_URL, title: GIS_TSCH_TITLE };
   const url = (system.url || "").toLowerCase();
   if (url.includes("lc.x5.ru")) return { url: LICENSING_IFRAME_URL, title: LICENSING_PORTAL_TITLE };
   if (url.includes("rosreestr.x5.ru")) return { url: ROSREESTR_IFRAME_URL, title: ROSREESTR_PORTAL_TITLE };
   if (url.includes("mikx.x5.ru")) return { url: PORTAL_IK_TSH_IFRAME_URL, title: PORTAL_IK_TSH_TITLE };
-  if (url.includes("ko1.x5.ru")) return { url: ASKO_TS5_IFRAME_URL, title: ASKO_TS5_PORTAL_TITLE };
+  if (url.includes("ko1.x5.ru")) return { url: (system.title || "").toLowerCase().includes("тсх") ? ASKO_TSH_IFRAME_URL : ASKO_TS5_IFRAME_URL, title: (system.title || "").toLowerCase().includes("тсх") ? ASKO_TSH_TITLE : ASKO_TS5_PORTAL_TITLE };
+  if (url.includes("ko1-tsh.x5.ru")) return { url: ASKO_TSH_IFRAME_URL, title: ASKO_TSH_TITLE };
+  if (url.includes("sed.x5.ru")) return { url: SED_IFRAME_URL, title: (system.title || SED_TS5_TITLE).trim() || SED_TS5_TITLE };
+  if (url.includes("tc5-arenda.x5.ru") || url.includes("rentplamform") || url.includes("rentplatform")) return { url: ARENDA_PYATEROCHKA_IFRAME_URL, title: ARENDA_PYATEROCHKA_TITLE };
+  if (url.includes("support.x5.ru")) return { url: IT_SUPPORT_IFRAME_URL, title: IT_SUPPORT_TITLE };
+  if (url.includes("sfera.x5.ru")) return { url: SFERA_IFRAME_URL, title: SFERA_TITLE };
+  if (url.includes("gis.x5.ru")) return { url: GIS_IFRAME_URL, title: (system.title || GIS_TS5_TITLE).trim() || GIS_TS5_TITLE };
   if (url.includes("localhost:5190") || url.includes(":5190")) return { url: LICENSING_IFRAME_URL, title: LICENSING_PORTAL_TITLE };
   return undefined;
 }
@@ -585,6 +766,12 @@ const SEARCH_PLACEHOLDER_PHRASES = [
   "Поиск по порталам и виджетам",
   "Поиск по новостям и событиям",
   "Поиск по задачам и календарю",
+];
+const STORES_SEARCH_PLACEHOLDER_PHRASES = [
+  "Поиск по коду, адресу, городу, региону...",
+  "Код магазина (MSK-001, SPB-002...)",
+  "Город: Москва, Санкт-Петербург...",
+  "Регион или формат магазина",
 ];
 
 function _getDefaultWidgetRowSpanLegacy(widgetId) {
@@ -1243,6 +1430,12 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
   const [selectedPortalCategory, setSelectedPortalCategory] = useState("Все");
   const [portalViewMode, setPortalViewMode] = useState("grid");
   const [storeSearchQuery, setStoreSearchQuery] = useState("");
+  const [storeFilterCity, setStoreFilterCity] = useState(null);
+  const [storeFilterRegion, setStoreFilterRegion] = useState(null);
+  const [storeFilterFormat, setStoreFilterFormat] = useState(null);
+  const [storeFilterHours, setStoreFilterHours] = useState(null);
+  const [storeFilterModal, setStoreFilterModal] = useState(null); // 'city' | 'region' | 'format' | 'hours'
+  const [selectedStoreModal, setSelectedStoreModal] = useState(null); // store object or null
   const [showPortalsSlider, setShowPortalsSlider] = useState(true);
   const [portalFavorites, setPortalFavorites] = useState([]);
   const [hiddenPortalIds, setHiddenPortalIds] = useState([]);
@@ -1283,9 +1476,14 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem(ONBOARDING_STORAGE_KEY));
   const [searchPlaceholderIndex, setSearchPlaceholderIndex] = useState(0);
   const [searchPlaceholderText, setSearchPlaceholderText] = useState("");
+  const [storesSearchPlaceholderIndex, setStoresSearchPlaceholderIndex] = useState(0);
+  const [storesSearchPlaceholderText, setStoresSearchPlaceholderText] = useState("");
   const searchPlaceholderCharIndexRef = useRef(0);
   const searchPlaceholderPhaseRef = useRef("typing");
   const searchPlaceholderPauseUntilRef = useRef(0);
+  const storesSearchPlaceholderCharIndexRef = useRef(0);
+  const storesSearchPlaceholderPhaseRef = useRef("typing");
+  const storesSearchPlaceholderPauseUntilRef = useRef(0);
   const avatarFrameRef = useRef(null);
   const avatarPreviewImageRef = useRef(null);
   const avatarSelectorRef = useRef(null);
@@ -1480,6 +1678,40 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
     }, 70);
     return () => clearInterval(interval);
   }, [searchPlaceholderIndex]);
+
+  useEffect(() => {
+    const phrases = STORES_SEARCH_PLACEHOLDER_PHRASES;
+    const interval = setInterval(() => {
+      const phrase = phrases[storesSearchPlaceholderIndex];
+      if (!phrase) return;
+      const phase = storesSearchPlaceholderPhaseRef.current;
+      if (phase === "typing") {
+        const idx = storesSearchPlaceholderCharIndexRef.current;
+        if (idx < phrase.length) {
+          storesSearchPlaceholderCharIndexRef.current = idx + 1;
+          setStoresSearchPlaceholderText(phrase.slice(0, idx + 1));
+        } else {
+          storesSearchPlaceholderPhaseRef.current = "pause";
+          storesSearchPlaceholderPauseUntilRef.current = Date.now() + 2500;
+        }
+      } else if (phase === "pause") {
+        if (Date.now() >= storesSearchPlaceholderPauseUntilRef.current) {
+          storesSearchPlaceholderPhaseRef.current = "clearing";
+        }
+      } else if (phase === "clearing") {
+        setStoresSearchPlaceholderText((prev) => {
+          if (prev.length <= 1) {
+            storesSearchPlaceholderPhaseRef.current = "typing";
+            storesSearchPlaceholderCharIndexRef.current = 0;
+            setStoresSearchPlaceholderIndex((i) => (i + 1) % phrases.length);
+            return "";
+          }
+          return prev.slice(0, -1);
+        });
+      }
+    }, 70);
+    return () => clearInterval(interval);
+  }, [storesSearchPlaceholderIndex]);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -1828,18 +2060,34 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
       });
   }, [catalog, hiddenPortalIds, selectedPortalCategory, portalSearch, portalFavorites]);
 
+  const storesUniqueValues = useMemo(() => {
+    const cities = [...new Set(PYATEROCHKA_STORES.map((s) => s.city))].sort();
+    const regions = [...new Set(PYATEROCHKA_STORES.map((s) => s.region))].sort();
+    const formats = [...new Set(PYATEROCHKA_STORES.map((s) => s.format))].sort();
+    const hours = [...new Set(PYATEROCHKA_STORES.map((s) => s.hours))].sort();
+    return { cities, regions, formats, hours };
+  }, []);
+
   const filteredStores = useMemo(() => {
+    let list = PYATEROCHKA_STORES;
     const q = storeSearchQuery.trim().toLowerCase();
-    if (!q) return PYATEROCHKA_STORES;
-    return PYATEROCHKA_STORES.filter(
-      (s) =>
-        s.code.toLowerCase().includes(q) ||
-        s.city.toLowerCase().includes(q) ||
-        s.address.toLowerCase().includes(q) ||
-        s.region.toLowerCase().includes(q) ||
-        s.format.toLowerCase().includes(q)
-    );
-  }, [storeSearchQuery]);
+    if (q) {
+      list = list.filter(
+        (s) =>
+          s.code.toLowerCase().includes(q) ||
+          s.city.toLowerCase().includes(q) ||
+          s.address.toLowerCase().includes(q) ||
+          s.region.toLowerCase().includes(q) ||
+          s.format.toLowerCase().includes(q) ||
+          (s.hours && s.hours.toLowerCase().includes(q))
+      );
+    }
+    if (storeFilterCity) list = list.filter((s) => s.city === storeFilterCity);
+    if (storeFilterRegion) list = list.filter((s) => s.region === storeFilterRegion);
+    if (storeFilterFormat) list = list.filter((s) => s.format === storeFilterFormat);
+    if (storeFilterHours) list = list.filter((s) => s.hours === storeFilterHours);
+    return list;
+  }, [storeSearchQuery, storeFilterCity, storeFilterRegion, storeFilterFormat, storeFilterHours]);
 
   const activityFeedItems = useMemo(() => {
     const items = [];
@@ -3804,7 +4052,7 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                       <>
                         <div className="news-sidebar-promo-image-wrap news-sidebar-promo-placeholder">
                           <div className="news-sidebar-promo-overlay">
-                            <strong>Платформа развития ТСЧ</strong>
+                            <strong>Портал развития ТСЧ</strong>
                             <p>Актуальные новости и сервисы в одном месте</p>
                             <button type="button" className="news-sidebar-promo-btn">Узнать подробнее</button>
                           </div>
@@ -3938,21 +4186,162 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
 
         {activeSection === "stores" && (
           <section className="stores-section" aria-label="Торговые объекты">
-            <div className="stores-section-head">
-              <h2>Торговые объекты</h2>
-              <p className="stores-section-desc">Магазины сети «Пятёрочка» (X5 Retail Group). Данные из открытых источников.</p>
-            </div>
             <div className="stores-controls">
               <input
                 type="search"
                 className="stores-search-input"
-                placeholder="Поиск по коду, адресу, городу, региону..."
+                placeholder={storesSearchPlaceholderText}
                 value={storeSearchQuery}
                 onChange={(e) => setStoreSearchQuery(e.target.value)}
                 aria-label="Поиск по торговым объектам"
               />
               <span className="stores-count">{filteredStores.length} из {PYATEROCHKA_STORES.length}</span>
+              <div className="stores-filters">
+              <button
+                type="button"
+                className={`stores-filter-trigger ${storeFilterCity !== null ? "has-value" : ""}`}
+                onClick={() => setStoreFilterModal("city")}
+                aria-haspopup="dialog"
+                aria-expanded={storeFilterModal === "city"}
+              >
+                Город{storeFilterCity ? `: ${storeFilterCity}` : ""}
+              </button>
+              <button
+                type="button"
+                className={`stores-filter-trigger ${storeFilterRegion !== null ? "has-value" : ""}`}
+                onClick={() => setStoreFilterModal("region")}
+                aria-haspopup="dialog"
+                aria-expanded={storeFilterModal === "region"}
+              >
+                Регион{storeFilterRegion ? `: ${storeFilterRegion}` : ""}
+              </button>
+              <button
+                type="button"
+                className={`stores-filter-trigger ${storeFilterFormat !== null ? "has-value" : ""}`}
+                onClick={() => setStoreFilterModal("format")}
+                aria-haspopup="dialog"
+                aria-expanded={storeFilterModal === "format"}
+              >
+                Формат{storeFilterFormat ? `: ${storeFilterFormat}` : ""}
+              </button>
+              <button
+                type="button"
+                className={`stores-filter-trigger ${storeFilterHours !== null ? "has-value" : ""}`}
+                onClick={() => setStoreFilterModal("hours")}
+                aria-haspopup="dialog"
+                aria-expanded={storeFilterModal === "hours"}
+              >
+                Режим работы{storeFilterHours ? `: ${storeFilterHours}` : ""}
+              </button>
+              {(storeFilterCity !== null || storeFilterRegion !== null || storeFilterFormat !== null || storeFilterHours !== null) && (
+                <button
+                  type="button"
+                  className="stores-filter-clear"
+                  onClick={() => {
+                    setStoreFilterCity(null);
+                    setStoreFilterRegion(null);
+                    setStoreFilterFormat(null);
+                    setStoreFilterHours(null);
+                  }}
+                  title="Сбросить все фильтры"
+                  aria-label="Сбросить все фильтры"
+                >
+                  <span aria-hidden>✕</span>
+                </button>
+              )}
+              </div>
             </div>
+            {storeFilterModal && (
+              <div
+                className="stores-filter-modal-overlay"
+                onClick={() => setStoreFilterModal(null)}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="stores-filter-modal-title"
+              >
+                <div className="stores-filter-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="stores-filter-modal-head">
+                    <h2 id="stores-filter-modal-title">
+                      {storeFilterModal === "city" && "Фильтр: Город"}
+                      {storeFilterModal === "region" && "Фильтр: Регион"}
+                      {storeFilterModal === "format" && "Фильтр: Формат"}
+                      {storeFilterModal === "hours" && "Фильтр: Режим работы"}
+                    </h2>
+                    <button type="button" className="stores-filter-modal-close" onClick={() => setStoreFilterModal(null)} aria-label="Закрыть">✕</button>
+                  </div>
+                  <div className="stores-filter-modal-body">
+                    {storeFilterModal === "city" && (
+                      <>
+                        <button type="button" className={`stores-filter-option ${storeFilterCity === null ? "active" : ""}`} onClick={() => { setStoreFilterCity(null); setStoreFilterModal(null); }}>Все</button>
+                        {storesUniqueValues.cities.map((city) => (
+                          <button key={city} type="button" className={`stores-filter-option ${storeFilterCity === city ? "active" : ""}`} onClick={() => { setStoreFilterCity(city); setStoreFilterModal(null); }}>{city}</button>
+                        ))}
+                      </>
+                    )}
+                    {storeFilterModal === "region" && (
+                      <>
+                        <button type="button" className={`stores-filter-option ${storeFilterRegion === null ? "active" : ""}`} onClick={() => { setStoreFilterRegion(null); setStoreFilterModal(null); }}>Все</button>
+                        {storesUniqueValues.regions.map((region) => (
+                          <button key={region} type="button" className={`stores-filter-option ${storeFilterRegion === region ? "active" : ""}`} onClick={() => { setStoreFilterRegion(region); setStoreFilterModal(null); }}>{region}</button>
+                        ))}
+                      </>
+                    )}
+                    {storeFilterModal === "format" && (
+                      <>
+                        <button type="button" className={`stores-filter-option ${storeFilterFormat === null ? "active" : ""}`} onClick={() => { setStoreFilterFormat(null); setStoreFilterModal(null); }}>Все</button>
+                        {storesUniqueValues.formats.map((format) => (
+                          <button key={format} type="button" className={`stores-filter-option ${storeFilterFormat === format ? "active" : ""}`} onClick={() => { setStoreFilterFormat(format); setStoreFilterModal(null); }}>{format}</button>
+                        ))}
+                      </>
+                    )}
+                    {storeFilterModal === "hours" && (
+                      <>
+                        <button type="button" className={`stores-filter-option ${storeFilterHours === null ? "active" : ""}`} onClick={() => { setStoreFilterHours(null); setStoreFilterModal(null); }}>Все</button>
+                        {storesUniqueValues.hours.map((hours) => (
+                          <button key={hours} type="button" className={`stores-filter-option ${storeFilterHours === hours ? "active" : ""}`} onClick={() => { setStoreFilterHours(hours); setStoreFilterModal(null); }}>{hours}</button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {selectedStoreModal && (
+              <div
+                className="stores-store-modal-overlay"
+                onClick={() => setSelectedStoreModal(null)}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="stores-store-modal-title"
+              >
+                <div className="stores-store-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="stores-store-modal-head">
+                    <h2 id="stores-store-modal-title">Пятёрочка {selectedStoreModal.code}</h2>
+                    <button type="button" className="stores-store-modal-close" onClick={() => setSelectedStoreModal(null)} aria-label="Закрыть">✕</button>
+                  </div>
+                  <div className="stores-store-modal-body">
+                    <dl className="stores-store-details">
+                      <dt>Код</dt>
+                      <dd><code>{selectedStoreModal.code}</code></dd>
+                      <dt>Адрес</dt>
+                      <dd>{selectedStoreModal.address}</dd>
+                      <dt>Город</dt>
+                      <dd>{selectedStoreModal.city}</dd>
+                      <dt>Регион</dt>
+                      <dd>{selectedStoreModal.region}</dd>
+                      <dt>Формат</dt>
+                      <dd>{selectedStoreModal.format}</dd>
+                      <dt>Режим работы</dt>
+                      <dd>{selectedStoreModal.hours}</dd>
+                      <dt>Телефон</dt>
+                      <dd>8 800 555-35-35 <span className="stores-store-modal-hint">(единая справочная X5)</span></dd>
+                      <dt>Координаты</dt>
+                      <dd>{selectedStoreModal.lat != null && selectedStoreModal.lon != null ? `${selectedStoreModal.lat.toFixed(4)}, ${selectedStoreModal.lon.toFixed(4)}` : "—"}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="stores-table-wrap">
               <table className="stores-table">
                 <thead>
@@ -3967,7 +4356,19 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                 </thead>
                 <tbody>
                   {filteredStores.map((store) => (
-                    <tr key={store.id}>
+                    <tr
+                      key={store.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedStoreModal(store)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedStoreModal(store);
+                        }
+                      }}
+                      className="stores-table-row-clickable"
+                    >
                       <td><code>{store.code}</code></td>
                       <td>{store.address}</td>
                       <td>{store.city}</td>
@@ -4604,12 +5005,16 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
           role="dialog"
           aria-modal="true"
           aria-labelledby="add-portal-modal-title"
+          aria-describedby="add-portal-modal-desc"
         >
           <div ref={addPortalModalRef} className="add-portal-modal" onClick={(e) => e.stopPropagation()}>
             <div className="add-portal-modal-head">
-              <h3 id="add-portal-modal-title">Добавить портал в избранное</h3>
+              <div className="add-portal-modal-title-wrap">
+                <h2 id="add-portal-modal-title" className="add-portal-modal-title">Добавить портал в избранное</h2>
+                <p id="add-portal-modal-desc" className="add-portal-modal-desc">Выберите порталы для быстрого доступа в сайдбаре</p>
+              </div>
               <button type="button" className="add-portal-modal-close" onClick={() => setAddPortalModalOpen(false)} aria-label="Закрыть">
-                ✕
+                <span aria-hidden>✕</span>
               </button>
             </div>
             <div className="add-portal-modal-body">
@@ -4643,7 +5048,6 @@ function DashboardPage({ token, profile, onLogout, onProfileChange, refreshProfi
                         <strong>{meta.displayTitle || system.title}</strong>
                         <span>{system.category}</span>
                       </div>
-                      {isFavorite && <span className="add-portal-tile-check" aria-hidden="true">✓</span>}
                     </button>
                   );
                 })}
